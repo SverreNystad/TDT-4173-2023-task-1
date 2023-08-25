@@ -11,7 +11,7 @@ class DecisionTree:
         # (with defaults) as you see fit
         pass
     
-    def fit(self, X, y):
+    def fit(self, X: pd.DataFrame, y: pd.Series):
         """
         Generates a decision tree for classification
         
@@ -24,7 +24,7 @@ class DecisionTree:
         # TODO: Implement 
         raise NotImplementedError()
     
-    def predict(self, X):
+    def predict(self, X: pd.DataFrame):
         """
         Generates predictions
         
