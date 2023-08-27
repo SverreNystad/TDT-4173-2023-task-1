@@ -36,20 +36,19 @@ class LogisticRegression:
             y (array<m>): a vector of floats containing 
                 m binary 0.0/1.0 labels
         """
-        samples: int = X.shape[0]
-        features: int = X.shape[1]
+        samples: int = X.shape[0] # The number of rows in X. Aka data points
+        features: int = X.shape[1] # The number of columns in X aka attributes for each data point
 
         # Initialize weights
         self.weights = self.random_weights(features)
         self.bias = 0
 
-        for _ in range(0, self.max_iterations):
+        for iteration in range(0, self.max_iterations):
             # Calculate predictions
-            model: np.ndarray = np.dot(X, self.weights.T) + self.bias
-            y_pred: np.ndarray = sigmoid(model)
+            y_pred: np.ndarray = self.predict(X)
 
             # Calculate gradients
-            dw =  np.dot(X.T, (y_pred - y))  - self.regularization(self.weights)
+            dw =  np.dot(X.T, (y_pred - y)) - self.regularization(self.weights)
             db =  np.sum(y_pred - y)
 
             # Update weights and bias
@@ -58,24 +57,14 @@ class LogisticRegression:
 
             # Calculate loss
             loss = binary_cross_entropy(y, y_pred)
-            self.history.append((_, loss)) # TODO: REMOVE
+            self.history.append((iteration, loss)) # TODO: REMOVE
             if self.convergence_criterion(loss):
                 break
-            self._last_loss = loss
+            
+            self.change_learning_rate(iteration)
             
 
-    def random_weights(self, shape: int) -> np.ndarray:
-        """
-        Initializes weights for the classifier
-        
-        Args:
-            shape (int): the number of weights to initialize
-        
-        Returns:
-            A numpy array of shape (shape,)
-        """
-        return np.random.randn(shape) * 0.01
-
+   
     def regularization(self, weights: np.ndarray) -> float:
         """
         Calculates the regularization term with L1 and L2 regularization given the weights
@@ -108,14 +97,11 @@ class LogisticRegression:
         """
         return  self.l2_strength * np.sum(np.abs(weights))
     
-    def change_learning_rate(self, learning_rate: float, loss: float):
+    def change_learning_rate(self, iteration: int):
         """
         Changes the learning rate based on the loss from the previous epoch
         """
-        if loss > self._last_loss:
-            self.learning_rate *= 0.90
-        else:
-            self.learning_rate *= 1.05
+        self.learning_rate = epsilon_decay(iteration)
 
     def convergence_criterion(self, loss: float) -> bool:
         """
@@ -133,7 +119,9 @@ class LogisticRegression:
     def predict(self, X: np.ndarray) -> np.ndarray:
         """
         Generates predictions
-        
+        Generates "soft" predictions for each data point in X.
+        Formula to find z:  z = w.T * X + b. \n
+        Finds the predicted value z and sigmoidify it to get the probability
         Note: should be called after .fit()
         
         Args:
@@ -150,14 +138,31 @@ class LogisticRegression:
         return soft_prediction
         # hard_prediction = np.where(soft_prediction >= 0.5, 1, 0)
         # return hard_prediction
-        # TODO: Implement
-        # raise NotImplemented()
         
 
         
 # --- Some utility functions 
 
+def epsilon_decay(iteration: int) -> float:
+    """
+    Calculate the learning rate for the current iteration using epsilon decay.
+    
+    Args:
+    - iteration (int): Current iteration or epoch.
+    
+    Returns:
+    - float: Updated learning rate for the current iteration.
+    """
+    initial_epsilon = 0.1 # initial_epsilon (float): Initial learning rate.
+    decay_rate = 0.99 # decay_rate (float): Rate at which learning rate decays.
+    min_epsilon = 0.001 # min_epsilon (float, optional): Minimum learning rate.
 
+    learning_rate = initial_epsilon * (decay_rate ** iteration)
+    
+    if min_epsilon:
+        learning_rate = max(learning_rate, min_epsilon)
+        
+    return learning_rate
 
 def binary_accuracy(y_true: np.ndarray, y_pred: np.ndarray, threshold=0.5) -> float:
     """
@@ -274,7 +279,7 @@ if __name__ == "__main__":
 
     # Calculate accuracy and cross entropy for out-of-sample predictions
     y_pred_test = model_2.predict(X_test)
-    print('\nTest')
+    print('\nTest 2')
     print(f'Accuracy: {binary_accuracy(y_true=y_test, y_pred=y_pred_test, threshold=0.5) :.3f}')
     print(f'Cross Entropy:  {binary_cross_entropy(y_true=y_test, y_pred=y_pred_test) :.3f}')
     plot_xy_pairs(model_2.history)
