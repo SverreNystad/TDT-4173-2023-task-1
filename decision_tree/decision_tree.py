@@ -3,10 +3,31 @@ import pandas as pd
 # IMPORTANT: DO NOT USE ANY OTHER 3RD PARTY PACKAGES
 # (math, random, collections, functools, etc. are perfectly fine)
 
+class Inference:
+    """
+    Inference is a class that can be used to make predictions
+    
+    Example usage:
+    >>> r1 = Rule([('Outlook', 'Overcast')], 'Yes')
+    >>> r2 = Rule([('Outlook', 'Rain'), ('Wind', 'Strong')], 'No')
+    """
+
+    def __init__(self, antecedent: list[tuple[str, str]], consequent: str):
+        """
+        antecedent: a list of tuples of the form (attr, val)
+        The antecedent is the set of conditions that must be met for the consequent to be true
+        consequent: a string label
+        """
+        self.antecedent = antecedent
+        self.consequent = consequent
+
+    def __repr__(self):
+        return f"{' ^ '.join([f'{attr}={val}' for attr, val in self.antecedent])} => {self.consequent}"
+    
 
 class DecisionTree:
     
-    def __init__():
+    def __init__(self):
         # NOTE: Feel free add any hyperparameters 
         # (with defaults) as you see fit
         pass
@@ -21,6 +42,12 @@ class DecisionTree:
                 to the features.
             y (pd.Series): a vector of discrete ground-truth labels
         """
+
+        # 1. Calculate the entropy of every attribute a of the data set S.
+        # 2. Partition ("split") the set S into subsets using the attribute for which the resulting entropy after splitting is minimized; or, equivalently, information gain is maximum.
+        # 3. Make a decision tree node containing that attribute.
+        # 4. Recurse on subsets using the remaining attributes
+
         # TODO: Implement 
         raise NotImplementedError()
     
@@ -41,7 +68,7 @@ class DecisionTree:
         # TODO: Implement 
         raise NotImplementedError()
     
-    def get_rules(self):
+    def get_rules(self) -> list[Inference]:
         """
         Returns the decision tree as a list of rules
         
