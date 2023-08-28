@@ -9,8 +9,6 @@ import pandas as pd
 class LogisticRegression:
     
     def __init__(self, learning_rate=0.01, max_iterations=100000, l1_strength=0.01, l2_strength=0.01):
-        # NOTE: Feel free add any hyperparameters 
-        # (with defaults) as you see fit
         # Hyperparameters
         self.learning_rate = learning_rate # How much to update in each iteration, the step size of gradient descent
         self.max_iterations = max_iterations # Max number of gradient descent iterations
