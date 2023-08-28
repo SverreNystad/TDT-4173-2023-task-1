@@ -48,8 +48,8 @@ class LogisticRegression:
             y_pred: np.ndarray = self.predict(X)
 
             # Calculate gradients
-            dw =  np.dot(X.T, (y_pred - y)) - self.regularization(self.weights)
-            db =  np.sum(y_pred - y)
+            dw = np.dot(X.T, (y_pred - y)) - self.regularization(self.weights)
+            db = np.sum(y_pred - y)
 
             # Update weights and bias
             self.weights -= self.learning_rate * dw
@@ -60,14 +60,20 @@ class LogisticRegression:
             self.history.append((iteration, loss)) # TODO: REMOVE
             if self.convergence_criterion(loss):
                 break
+            self._last_loss = loss
+            # self.change_learning_rate(iteration)
             
-            self.change_learning_rate(iteration)
-            
-    def random_weights(self, features: int) -> np.ndarray:
+    def random_weights(self, shape: int) -> np.ndarray:
         """
-        Generates a vector of random weights for each feature
+        Initializes weights for the classifier
+        
+        Args:
+            shape (int): the number of weights to initialize
+        
+        Returns:
+            A numpy array of shape (shape,)
         """
-        return np.random.rand(features)
+        return np.random.rand(shape) * 0.01
    
     def regularization(self, weights: np.ndarray) -> float:
         """
