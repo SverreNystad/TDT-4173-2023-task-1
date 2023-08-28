@@ -63,7 +63,11 @@ class LogisticRegression:
             
             self.change_learning_rate(iteration)
             
-
+    def random_weights(self, features: int) -> np.ndarray:
+        """
+        Generates a vector of random weights for each feature
+        """
+        return np.random.rand(features)
    
     def regularization(self, weights: np.ndarray) -> float:
         """
@@ -123,7 +127,7 @@ class LogisticRegression:
         Formula to find z:  z = w.T * X + b. \n
         Finds the predicted value z and sigmoidify it to get the probability
         Note: should be called after .fit()
-        
+        Values close to -infinity are more likely to be 0 and values close to infinity are more likely to be 1
         Args:
             X (array<m,n>): a matrix of floats with 
                 m rows (#samples) and n columns (#features)
