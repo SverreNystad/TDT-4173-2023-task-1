@@ -4,8 +4,6 @@ import pandas as pd
 # (math, random, collections, functools, etc. are perfectly fine)
 
 
-
-
 class LogisticRegression:
     
     def __init__(self, learning_rate=0.01, max_iterations=100000, l1_strength=0.01, l2_strength=0.01):
@@ -59,7 +57,8 @@ class LogisticRegression:
             self.bias -= self.learning_rate * db
 
             # Calculate loss
-            loss = binary_cross_entropy(y, y_pred)
+            # loss = binary_cross_entropy(y, y_pred)
+            loss = hinge_loss(y, y_pred)
             self.history.append((iteration, loss)) # TODO: REMOVE
             if self.convergence_criterion(loss):
                 break
@@ -190,9 +189,9 @@ def epsilon_decay(iteration: int) -> float:
     Returns:
     - float: Updated learning rate for the current iteration.
     """
-    initial_epsilon = 0.1 # initial_epsilon (float): Initial learning rate.
+    initial_epsilon = 0.01 # initial_epsilon (float): Initial learning rate.
     decay_rate = 0.99 # decay_rate (float): Rate at which learning rate decays.
-    min_epsilon = 0.001 # min_epsilon (float, optional): Minimum learning rate.
+    min_epsilon = 0.00001 # min_epsilon (float, optional): Minimum learning rate.
 
     learning_rate = initial_epsilon * (decay_rate ** iteration)
     
@@ -237,6 +236,21 @@ def binary_cross_entropy(y_true: np.ndarray, y_pred: np.ndarray, eps=1e-15) -> f
         (1 - y_true) * (np.log(1 - y_pred))
     )
 
+
+def hinge_loss(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    """
+    Computes hinge loss
+    In machine learning, the hinge loss is a loss function used for training classifiers. The hinge loss is used for "maximum-margin" classification, most notably for support vector machines (SVMs).
+    For an intended output t = ±1 and a classifier score y, the hinge loss of the prediction y is defined as
+    L(y) = max(0, 1 - yt)
+    Args:
+        y_true (array<m>): m 0/1 floats with ground truth labels
+        y_pred (array<m>): m [0,1] floats with "soft" predictions
+    Returns:
+        Hinge loss averaged over the input elements
+    """
+    assert y_true.shape == y_pred.shape
+    return np.mean(np.maximum(0, 1 - y_true * y_pred))
 
 def sigmoid(x):
     """
