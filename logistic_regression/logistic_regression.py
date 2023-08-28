@@ -34,9 +34,14 @@ class LogisticRegression:
             y (array<m>): a vector of floats containing 
                 m binary 0.0/1.0 labels
         """
+
+        # Prepare data
+        X = self.prepare_data(X)
+        
+        # Initialize weights and bias
         samples: int = X.shape[0] # The number of rows in X. Aka data points
         features: int = X.shape[1] # The number of columns in X aka attributes for each data point
-
+        
         # Initialize weights
         self.weights = self.random_weights(features)
         self.bias = 0
@@ -73,6 +78,27 @@ class LogisticRegression:
         """
         return np.random.rand(shape) * 0.01
    
+    def prepare_data(self, original_array: np.ndarray) -> np.ndarray:
+        """
+        Will feature engineer the data to prepare for training
+        Add new columns to the data matrix original_array to capture interactions between features
+
+        Args:
+            original_array (array<m,n>): a matrix of floats with 
+                m rows (#samples) and n columns (#features)
+        Returns:
+            The feature engineered data matrix original_array
+        """
+
+        # Compute the squared features
+        squared_features = original_array**2
+
+        # Concatenate the original array with the squared features
+        output_array = np.concatenate((original_array, squared_features), axis=1)
+        return output_array
+
+        
+
     def regularization(self, weights: np.ndarray) -> float:
         """
         Calculates the regularization term with L1 and L2 regularization given the weights
@@ -140,6 +166,9 @@ class LogisticRegression:
             A length m array of floats in the range [0, 1]
             with probability-like predictions
         """
+        
+        if X.shape[1] != self.weights.shape[0]:
+            X = self.prepare_data(X)
 
         z: np.ndarray = np.dot(X, self.weights.T) + self.bias
         soft_prediction: np.ndarray = sigmoid(z)
