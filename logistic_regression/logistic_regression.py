@@ -49,6 +49,7 @@ class LogisticRegression:
             y_pred: np.ndarray = self.predict(X)
 
             # Calculate gradients
+            # θ := θ + (y(i) - hθ(xi)) * xi
             dw = np.dot(X.T, (y - y_pred)) + self.regularization(self.weights)
             db = np.sum(y - y_pred)
 
