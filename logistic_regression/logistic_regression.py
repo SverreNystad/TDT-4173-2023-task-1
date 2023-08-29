@@ -49,12 +49,12 @@ class LogisticRegression:
             y_pred: np.ndarray = self.predict(X)
 
             # Calculate gradients
-            dw = np.dot(X.T, (y_pred - y)) - self.regularization(self.weights)
-            db = np.sum(y_pred - y)
+            dw = np.dot(X.T, (y - y_pred)) + self.regularization(self.weights)
+            db = np.sum(y - y_pred)
 
             # Update weights and bias
-            self.weights -= self.learning_rate * dw
-            self.bias -= self.learning_rate * db
+            self.weights += self.learning_rate * dw
+            self.bias += self.learning_rate * db
 
             # Calculate loss
             # loss = binary_cross_entropy(y, y_pred)
