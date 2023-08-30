@@ -3,26 +3,52 @@ import pandas as pd
 # IMPORTANT: DO NOT USE ANY OTHER 3RD PARTY PACKAGES
 # (math, random, collections, functools, etc. are perfectly fine)
 
-
 class KMeans:
     
-    def __init__():
+    def __init__(self, k: int=2, init_method: str="random"):
         # NOTE: Feel free add any hyperparameters 
         # (with defaults) as you see fit
-        pass
+        self.k = k # number of clusters
+        self.centroids = {} # cluster centroids
+
+        self.init_method = init_method # method to use for initialization
         
-    def fit(self, X):
+    def fit(self, X: pd.DataFrame):
         """
         Estimates parameters for the classifier
+        The fit method implements the naïve k-means clustering algorithm.
         
         Args:
             X (array<m,n>): a matrix of floats with
                 m rows (#samples) and n columns (#features)
         """
+        print(f"self.init_method = {self.init_method}, self.k = {self.k}, X.shape = {X.shape}")
+        # Initialize cluster centroids
+        self.centroids = initiate_cluster_centroids(X, self.k, self.init_method)
+
+        clusters = np.zeros(len(X))
+        for iteration in range(0, 100):
+            # Assign each point to the closest centroid
+            clusters = self.predict(X)
+
+            # Update the centroids based on the new cluster assignments
+            # Find the new centroids by taking the average value
+            for centroid_name, centroid in enumerate(self.centroids):
+                # Get the points that belong to the centroid
+                points = []
+                for i, cluster in enumerate(clusters):
+                    if cluster == centroid_name:
+                        points.append(X.iloc[i])
+                
+                # Calculate the average value of the points
+                self.centroids[centroid_name] = np.average(points, axis=0)
+
+            
         # TODO: Implement
-        raise NotImplemented()
+        # raise NotImplemented()
     
-    def predict(self, X):
+
+    def predict(self, X: pd.DataFrame) -> np.ndarray:
         """
         Generates predictions
         
@@ -38,10 +64,25 @@ class KMeans:
             there are 3 clusters, then a possible assignment
             could be: array([2, 0, 0, 1, 2, 1, 1, 0, 2, 2])
         """
-        # TODO: Implement 
-        raise NotImplemented()
-    
-    def get_centroids(self):
+        samples = np.shape(X)[0]
+        predictions = np.zeros(samples)
+
+        for sample in range(0, samples):
+            # Find the closest centroid
+            closest_centroid = 0
+            closest_distance = np.inf
+            for centroid_name, centroid in enumerate(self.centroids):
+                # print(f"centroid = {centroid}, X[i] = {X.iloc[).values}")
+                distance = euclidean_distance(X.iloc[sample].values, centroid)
+                if distance < closest_distance:
+                    closest_centroid = centroid_name
+                    closest_distance = distance
+            # Make the prediction feature-wise corresponding to the closest centroid feature-wise
+            predictions[sample] = closest_centroid
+        return predictions
+
+
+    def get_centroids(self) -> np.ndarray:
         """
         Returns the centroids found by the K-mean algorithm
         
@@ -56,14 +97,75 @@ class KMeans:
             [xm_1, xm_2, ..., xm_n]
         ])
         """
-        pass
+        return self.centroids
+
+
+def initiate_cluster_centroids(X: pd.DataFrame, k: int, method="random") -> np.ndarray:
+    """
+    Initializes the cluster centroids
     
-    
-    
-    
+    Args:
+        X (array<m,n>): a matrix of floats with
+            m rows (#samples) and n columns (#features)
+        k (int): number of clusters
+        method (str): method to use for initialization,
+            valid methods are: 'random', 'kmeans++'
+    """
+    if method == "random":
+        return random_initiate_cluster_centroids(X, k)
+    elif method == "kmeans++":
+        return kmeans_plus_plus_initiate_cluster_centroids(X, k)
+    else:
+        raise ValueError(f"Unknown method: {method}, valid methods are: 'random', 'kmeans++'")
+
+def random_initiate_cluster_centroids(X: pd.DataFrame, k: int) -> np.ndarray:
+    """
+    Initializes the cluster centroids by using random data points.
+    """
+    # Initialize the centroids to be random points
+    dimension = X.shape[1]
+    centroids = np.zeros((k, dimension))
+    # Choose one center uniformly at random from among the data points.
+    for i in range(0, k):
+        random_row = np.random.randint(X.shape[0])
+        choice = X.iloc[random_row]
+        centroids[i] = choice
+
+    return centroids
+
+def kmeans_plus_plus_initiate_cluster_centroids(X: np.ndarray, k: int) -> np.ndarray:
+    """
+    Initializes the cluster centroids by using k-means++
+    K-means++ is a smart way to initialize the centroids by first selecting a random point and then choosing the next points to be spread out as much as possible from the previous ones.
+    Learn more at: https://en.wikipedia.org/wiki/K-means%2B%2B
+    Args:
+        X (array<m,n>): a matrix of floats with
+            m rows (#samples) and n columns (#features)
+        k (int): number of clusters
+        
+    Returns:
+        A k x n float matrix with the centroids
+    """
+    # Choose one center uniformly at random from among the data points.
+    clusters = np.zeros((k, X.shape[1]))
+    # Chose the first at random
+    clusters[0] = X[np.random.choice(len(X))]
+
+    # For each data point x not chosen yet, compute D(x), the distance between x and the nearest center that has already been chosen.
+    for i in range(1, k):
+        # Compute the distance between each point and the nearest center
+        distance = np.zeros(len(X))
+        for j in range(0, len(X)):
+            distance[j] = min(euclidean_distance(X[j], clusters[0:i]))
+        # Choose one new data point at random as a new center, using a weighted probability distribution where a point x is chosen with probability proportional to D(x)2.
+        probability = distance**2/np.sum(distance**2)
+        index_of_new_center = np.random.choice(len(X), p=probability)
+        clusters[i] = X[index_of_new_center]
+
+    return clusters
 # --- Some utility functions 
 
-def euclidean_distance(x, y):
+def euclidean_distance(x, y) -> np.ndarray:
     """
     Computes euclidean distance between two sets of points 
     
@@ -79,7 +181,7 @@ def euclidean_distance(x, y):
     """
     return np.linalg.norm(x - y, ord=2, axis=-1)
 
-def cross_euclidean_distance(x, y=None):
+def cross_euclidean_distance(x, y=None) -> np.ndarray:
     """
     
     
@@ -90,7 +192,7 @@ def cross_euclidean_distance(x, y=None):
     return euclidean_distance(x[..., :, None, :], y[..., None, :, :])
 
 
-def euclidean_distortion(X, z):
+def euclidean_distortion(X, z) -> float:
     """
     Computes the Euclidean K-means distortion
     
@@ -116,7 +218,7 @@ def euclidean_distortion(X, z):
     return distortion
 
 
-def euclidean_silhouette(X, z):
+def euclidean_silhouette(X, z) -> float:
     """
     Computes the average Silhouette Coefficient with euclidean distance 
     
@@ -155,3 +257,28 @@ def euclidean_silhouette(X, z):
     
     return np.mean((b - a) / np.maximum(a, b))
   
+
+if __name__ == "__main__":
+    import numpy as np 
+    import pandas as pd 
+    import matplotlib.pyplot as plt 
+    import seaborn as sns 
+    data_1 = pd.read_csv('k_means\data_1.csv')
+    data_1.describe().T
+    # Fit Model 
+    X = data_1[['x0', 'x1']]
+    model_1 = KMeans() # <-- Should work with default constructor  
+    model_1.fit(X)
+
+    # Compute Silhouette Score 
+    z = model_1.predict(X)
+    print(f'Silhouette Score: {euclidean_silhouette(X, z) :.3f}')
+    print(f'Distortion: {euclidean_distortion(X, z) :.3f}')
+
+    # Plot cluster assignments
+    C = model_1.get_centroids()
+    K = len(C)
+    _, ax = plt.subplots(figsize=(5, 5), dpi=100)
+    sns.scatterplot(x='x0', y='x1', hue=z, hue_order=range(K), palette='tab10', data=X, ax=ax);
+    sns.scatterplot(x=C[:,0], y=C[:,1], hue=range(K), palette='tab10', marker='*', s=250, edgecolor='black', ax=ax)
+    ax.legend().remove()
