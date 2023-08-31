@@ -5,13 +5,12 @@ import pandas as pd
 
 class KMeans:
     
-    def __init__(self, k: int=2, init_method: str="random"):
-        # NOTE: Feel free add any hyperparameters 
-        # (with defaults) as you see fit
+    def __init__(self, k: int=2, init_method: str="random", max_iteration=100):
         self.k = k # number of clusters
         self.centroids = {} # cluster centroids
 
         self.init_method = init_method # method to use for initialization
+        self.max_iteration = max_iteration # maximum number of iterations to run the algorithm
         
     def fit(self, X: pd.DataFrame):
         """
@@ -27,7 +26,7 @@ class KMeans:
         self.centroids = initiate_cluster_centroids(X, self.k, self.init_method)
 
         clusters = np.zeros(len(X))
-        for iteration in range(0, 100):
+        for iteration in range(0, self.max_iteration):
             # Assign each point to the closest centroid
             clusters = self.predict(X)
 
@@ -213,7 +212,7 @@ def euclidean_distortion(X, z) -> float:
     for i, c in enumerate(clusters):
         Xc = X[z == c]
         mu = Xc.mean(axis=0)
-        distortion += ((Xc - mu) ** 2).sum(axis=1)
+        distortion += ((Xc - mu) ** 2).sum()
         
     return distortion
 
@@ -247,13 +246,13 @@ def euclidean_silhouette(X, z) -> float:
             in_cluster_b = z == cb
             d = cross_euclidean_distance(X[in_cluster_a], X[in_cluster_b])
             div = d.shape[1] - int(i == j)
-            D[in_cluster_a, j] = d.sum(axis=1) / np.clip(div, 1, None)
+            D[in_cluster_a, j] = d.sum() / np.clip(div, 1, None)
     
     # Intra distance 
     a = D[np.arange(len(X)), z]
     # Smallest inter distance 
     inf_mask = np.where(z[:, None] == clusters[None], np.inf, 0)
-    b = (D + inf_mask).min(axis=1)
+    b = (D + inf_mask).min()
     
     return np.mean((b - a) / np.maximum(a, b))
   
