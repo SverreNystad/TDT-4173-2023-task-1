@@ -22,7 +22,7 @@ class LogisticRegression:
         self._last_loss = 0
         self.history = []
         
-    def fit(self, X: np.ndarray, y: np.ndarray):
+    def fit(self, X: pd.DataFrame, y: pd.DataFrame):
         """
         Estimates parameters for the classifier
         
@@ -78,7 +78,7 @@ class LogisticRegression:
         """
         return np.random.rand(shape) * 0.01
    
-    def prepare_data(self, original_array: np.ndarray) -> np.ndarray:
+    def prepare_data(self, original_array: pd.DataFrame) -> np.ndarray:
         """
         Will feature engineer the data to prepare for training
         Add new columns to the data matrix original_array to capture interactions between features
@@ -167,6 +167,7 @@ class LogisticRegression:
             with probability-like predictions
         """
         
+        # Prepare data in case it is not prepared
         if X.shape[1] != self.weights.shape[0]:
             X = self.prepare_data(X)
 
@@ -271,16 +272,17 @@ def sigmoid(x):
 
 import matplotlib.pyplot as plt
 
-def plot_xy_pairs(xy_pairs):
+def plot_loss_over_iterations(loss_history):
     """
     Plots x,y values from a list of (x,y) value pairs.
+    The x,y values are assumed to be floats. 
     
     Parameters:
-    - xy_pairs: List of (x,y) tuples
+    - loss_history: List of (x,y) tuples
     """
     
     # Unzip the x and y values
-    x_values, y_values = zip(*xy_pairs)
+    x_values, y_values = zip(*loss_history)
     
     plt.figure(figsize=(10,6))
     plt.scatter(x_values, y_values, color='blue', marker='o', label='Data Points')
@@ -308,7 +310,7 @@ if __name__ == "__main__":
     print("Test 1")
     print(f"Accuracy: {binary_accuracy(y_true=y, y_pred=y_pred, threshold=0.5) :.3f}")
     print(f"Cross Entropy: {binary_cross_entropy(y_true=y, y_pred=y_pred) :.3f}")
-    plot_xy_pairs(model_1.history)
+    plot_loss_over_iterations(model_1.history)
 
     # Load second dataset and partition into train/test split
     data_2 = pd.read_csv("logistic_regression\data_2.csv")
@@ -334,4 +336,4 @@ if __name__ == "__main__":
     print('\nTest 2')
     print(f'Accuracy: {binary_accuracy(y_true=y_test, y_pred=y_pred_test, threshold=0.5) :.3f}')
     print(f'Cross Entropy:  {binary_cross_entropy(y_true=y_test, y_pred=y_pred_test) :.3f}')
-    plot_xy_pairs(model_2.history)
+    plot_loss_over_iterations(model_2.history)
