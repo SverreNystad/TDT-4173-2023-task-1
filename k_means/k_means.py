@@ -210,9 +210,9 @@ def euclidean_distortion(X, z) -> float:
     distortion = 0.0
     clusters = np.unique(z)
     for _, cluster in enumerate(clusters):
-        points_in_cluster = X[z == cluster]
+        points_in_cluster = X[z == cluster] # Xc = points_in_cluster
         # mean_point is the centroid of the cluster
-        centroid = points_in_cluster.mean(axis=0)
+        centroid = points_in_cluster.mean(axis=0) # mu = centroid
         distortion += ((points_in_cluster - centroid) ** 2).sum()
         
     return distortion
