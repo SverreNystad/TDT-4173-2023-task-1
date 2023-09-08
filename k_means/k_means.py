@@ -5,9 +5,9 @@ import pandas as pd
 
 class KMeans:
     
-    def __init__(self, k: int=2, init_method: str="random", max_iteration=100):
+    def __init__(self, k: int=2, init_method: str="random", max_iteration=10):
         self.k = k # number of clusters
-        self.centroids = {} # cluster centroids
+        self.centroids = np.zeros(k) # cluster centroids
 
         self.init_method = init_method # method to use for initialization
         self.max_iteration = max_iteration # maximum number of iterations to run the algorithm
@@ -132,7 +132,7 @@ def random_initiate_cluster_centroids(X: pd.DataFrame, k: int) -> np.ndarray:
 
     return centroids
 
-def kmeans_plus_plus_initiate_cluster_centroids(X: np.ndarray, k: int) -> np.ndarray:
+def kmeans_plus_plus_initiate_cluster_centroids(X: pd.DataFrame, k: int) -> np.ndarray:
     """
     Initializes the cluster centroids by using k-means++
     K-means++ is a smart way to initialize the centroids by first selecting a random point and then choosing the next points to be spread out as much as possible from the previous ones.
@@ -209,10 +209,11 @@ def euclidean_distortion(X, z) -> float:
     
     distortion = 0.0
     clusters = np.unique(z)
-    for i, c in enumerate(clusters):
-        Xc = X[z == c]
-        mu = Xc.mean(axis=0)
-        distortion += ((Xc - mu) ** 2).sum()
+    for _, cluster in enumerate(clusters):
+        points_in_cluster = X[z == cluster]
+        # mean_point is the centroid of the cluster
+        centroid = points_in_cluster.mean(axis=0)
+        distortion += ((points_in_cluster - centroid) ** 2).sum()
         
     return distortion
 
@@ -220,6 +221,8 @@ def euclidean_distortion(X, z) -> float:
 def euclidean_silhouette(X, z) -> float:
     """
     Computes the average Silhouette Coefficient with euclidean distance 
+    Silhouette measures how well object i matches the clustering at hand (that is, how well
+    it has been classified).
     
     More info:
         - https://www.sciencedirect.com/science/article/pii/0377042787901257
@@ -240,20 +243,28 @@ def euclidean_silhouette(X, z) -> float:
     # Compute average distances from each x to all other clusters
     clusters = np.unique(z)
     D = np.zeros((len(X), len(clusters)))
-    for i, ca in enumerate(clusters):
-        for j, cb in enumerate(clusters):
-            in_cluster_a = z == ca
-            in_cluster_b = z == cb
+    for i, cluster_a in enumerate(clusters):
+        for j, cluster_b in enumerate(clusters):
+            in_cluster_a = z == cluster_a
+            in_cluster_b = z == cluster_b
             d = cross_euclidean_distance(X[in_cluster_a], X[in_cluster_b])
             div = d.shape[1] - int(i == j)
             D[in_cluster_a, j] = d.sum() / np.clip(div, 1, None)
     
+    print(z.min(), z.max())
+    print(D.shape)      # should output (len(X), number of unique clusters)
+    print(len(X), len(z))
     # Intra distance 
-    a = D[np.arange(len(X)), z]
+    # a is the dissimilarity of a point in a cluster to the other objects within its cluster.
+    a = D[np.arange(len(X)), z] # average dissimilarity of each point to all other objects of the group it is assigned.
+    # a = np.unique(D) # average dissimilarity of each point to all other objects of the group it is assigned.
+    print(a.shape)
     # Smallest inter distance 
     inf_mask = np.where(z[:, None] == clusters[None], np.inf, 0)
-    b = (D + inf_mask).min()
-    
+    b = (D + inf_mask).min(axis=1)
+
+    # The silhouette score is the difference between the average intra-cluster distance and the smallest inter-cluster distance divided by the maximum of the two.
+    # Find the average silhouette score for the dataset by computing the silhouette score for each point, then taking the average.
     return np.mean((b - a) / np.maximum(a, b))
   
 
