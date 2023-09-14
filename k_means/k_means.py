@@ -99,7 +99,38 @@ class KMeans:
         return self.centroids
 
 
-def initiate_cluster_centroids(X: pd.DataFrame, k: int, method="random") -> np.ndarray:
+def feature_engineering(X: pd.DataFrame, method="normalize") -> pd.DataFrame:
+    """
+    Feature engineering for the data
+    """
+    if method == "normalize":
+        return normalize_data(X)
+    if method == "standardize":
+        return standardize_data(X)
+    else:
+        raise ValueError(f"Unknown method: {method}, valid methods are: 'normalize' and 'standardize'")
+
+
+def normalize_data(X: pd.DataFrame) -> np.ndarray():
+    """
+    Normalizes the data to be between 0 and 1
+    """
+    # Shift the data so that the minimum value is 0
+    x_shift = (X-X.min()) 
+    # Scale the data so that the maximum value is 1
+    feature_range = (X.max()-X.min())
+    return x_shift / feature_range
+
+def standardize_data(X: pd.DataFrame) -> np.ndarray():
+    """
+    Standardizes the data to have mean 0 and standard deviation 1
+    """
+    # Shift the data so that the mean is 0
+    x_shift = (X-X.mean())
+    # Scale the data so that the standard deviation is 1
+    return x_shift / X.std()
+
+def initiate_cluster_centroids(X: pd.DataFrame, k: int, method="kmeans++") -> np.ndarray:
     """
     Initializes the cluster centroids
     
@@ -162,6 +193,8 @@ def kmeans_plus_plus_initiate_cluster_centroids(X: pd.DataFrame, k: int) -> np.n
         clusters[i] = X[index_of_new_center]
 
     return clusters
+
+
 # --- Some utility functions 
 
 def euclidean_distance(x, y) -> np.ndarray:
@@ -267,28 +300,3 @@ def euclidean_silhouette(X, z) -> float:
     # Find the average silhouette score for the dataset by computing the silhouette score for each point, then taking the average.
     return np.mean((b - a) / np.maximum(a, b))
   
-
-if __name__ == "__main__":
-    import numpy as np 
-    import pandas as pd 
-    import matplotlib.pyplot as plt 
-    import seaborn as sns 
-    data_1 = pd.read_csv('k_means\data_1.csv')
-    data_1.describe().T
-    # Fit Model 
-    X = data_1[['x0', 'x1']]
-    model_1 = KMeans() # <-- Should work with default constructor  
-    model_1.fit(X)
-
-    # Compute Silhouette Score 
-    z = model_1.predict(X)
-    print(f'Silhouette Score: {euclidean_silhouette(X, z) :.3f}')
-    print(f'Distortion: {euclidean_distortion(X, z) :.3f}')
-
-    # Plot cluster assignments
-    C = model_1.get_centroids()
-    K = len(C)
-    _, ax = plt.subplots(figsize=(5, 5), dpi=100)
-    sns.scatterplot(x='x0', y='x1', hue=z, hue_order=range(K), palette='tab10', data=X, ax=ax);
-    sns.scatterplot(x=C[:,0], y=C[:,1], hue=range(K), palette='tab10', marker='*', s=250, edgecolor='black', ax=ax)
-    ax.legend().remove()
