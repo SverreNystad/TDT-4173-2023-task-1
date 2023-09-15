@@ -41,10 +41,6 @@ class KMeans:
                 
                 # Calculate the average value of the points
                 self.centroids[centroid_name] = np.average(points, axis=0)
-
-            
-        # TODO: Implement
-        # raise NotImplemented()
     
 
     def predict(self, X: pd.DataFrame) -> np.ndarray:
@@ -73,7 +69,6 @@ class KMeans:
             closest_centroid = 0
             closest_distance = np.inf
             for centroid_name, centroid in enumerate(self.centroids):
-                # print(f"centroid = {centroid}, X[i] = {X.iloc[).values}")
                 distance = euclidean_distance(X.iloc[sample].values, centroid)
                 if distance < closest_distance:
                     closest_centroid = centroid_name
@@ -286,14 +281,10 @@ def euclidean_silhouette(X, z) -> float:
             div = d.shape[1] - int(i == j)
             D[in_cluster_a, j] = d.sum() / np.clip(div, 1, None)
     
-    print(z.min(), z.max())
-    print(D.shape)      # should output (len(X), number of unique clusters)
-    print(len(X), len(z))
     # Intra distance 
     # a is the dissimilarity of a point in a cluster to the other objects within its cluster.
-    a = D[np.arange(len(X)), z] # average dissimilarity of each point to all other objects of the group it is assigned.
-    # a = np.unique(D) # average dissimilarity of each point to all other objects of the group it is assigned.
-    print(a.shape)
+    a = D[np.arange(len(X)), z] 
+    
     # Smallest inter distance 
     inf_mask = np.where(z[:, None] == clusters[None], np.inf, 0)
     b = (D + inf_mask).min(axis=1)
