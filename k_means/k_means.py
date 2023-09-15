@@ -64,7 +64,9 @@ class KMeans:
             could be: array([2, 0, 0, 1, 2, 1, 1, 0, 2, 2])
         """
         samples = np.shape(X)[0]
-        predictions = np.zeros(samples)
+        # Make predictions for each sample and as they will be used as indices, they need to be integers
+        predictions = np.zeros(samples, dtype=np.int)
+
 
         for sample in range(0, samples):
             # Find the closest centroid
