@@ -111,7 +111,7 @@ def feature_engineering(X: pd.DataFrame, method="normalize") -> pd.DataFrame:
         raise ValueError(f"Unknown method: {method}, valid methods are: 'normalize' and 'standardize'")
 
 
-def normalize_data(X: pd.DataFrame) -> np.ndarray():
+def normalize_data(X: pd.DataFrame) -> pd.DataFrame:
     """
     Normalizes the data to be between 0 and 1
     """
@@ -121,7 +121,7 @@ def normalize_data(X: pd.DataFrame) -> np.ndarray():
     feature_range = (X.max()-X.min())
     return x_shift / feature_range
 
-def standardize_data(X: pd.DataFrame) -> np.ndarray():
+def standardize_data(X: pd.DataFrame) -> pd.DataFrame:
     """
     Standardizes the data to have mean 0 and standard deviation 1
     """
@@ -130,7 +130,7 @@ def standardize_data(X: pd.DataFrame) -> np.ndarray():
     # Scale the data so that the standard deviation is 1
     return x_shift / X.std()
 
-def initiate_cluster_centroids(X: pd.DataFrame, k: int, method="kmeans++") -> np.ndarray:
+def initiate_cluster_centroids(X: pd.DataFrame, k: int, method="random") -> np.ndarray:
     """
     Initializes the cluster centroids
     
